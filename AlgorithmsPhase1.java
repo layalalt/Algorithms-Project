@@ -9,7 +9,7 @@ public class AlgorithmsPhase1
       double eReturn[] = new double[3];
       double riskLevel[] = new double[3];
       int quantity[] = new int[3];
-      try (BufferedReader br = new BufferedReader(new FileReader("Profile1.txt"))) 
+      try (BufferedReader br = new BufferedReader(new FileReader("Profile1.txt"))) //reads the text file containing the profile
       {
         int i=0;
         while((line = br.readLine()) != null)
@@ -26,8 +26,8 @@ public class AlgorithmsPhase1
       {
          e.printStackTrace();
       }
-      System.out.println( quantity[0] + " " + quantity[1] + " " + quantity[2]); //checks success of file reading (TEMPORARY)
-      System.out.print("Enter tolerance level (0.01-0.06): "); //random values
+      //System.out.println( quantity[0] + " " + quantity[1] + " " + quantity[2]); //checks success of file reading (TEMPORARY)
+      System.out.print("Enter tolerance level (0.01-0.04): ");
       double max = 0, tolerance = key.nextDouble();  
       int totalQuantity; 
       Allocation best = new Allocation();
@@ -44,7 +44,6 @@ public class AlgorithmsPhase1
              weights[2] = (k/(totalQuantity*1.0));
              portfolioReturn = weights[0]*eReturn[0] + weights[1]*eReturn[1] + weights[2]*eReturn[2]; 
              portfolioRisk = Math.sqrt(Variance(riskLevel, weights));
-             System.out.println("Return: " +portfolioReturn + "   Risk:" + portfolioRisk); //Temporary
              if(portfolioRisk <= tolerance)
              {
                if(portfolioReturn > max)
@@ -53,7 +52,6 @@ public class AlgorithmsPhase1
                  best.setAllocation(i, j, k, portfolioReturn, portfolioRisk);
                }
              }
-             
            }
          }
        }  
@@ -61,22 +59,25 @@ public class AlgorithmsPhase1
        System.out.println(name[0] + ": " + best.asset1);    
        System.out.println(name[1] + ": " + best.asset2);    
        System.out.println(name[2] + ": " + best.asset3); 
-       System.out.println("   Expected Portfolio Return: " + best.retrn);   
-       System.out.println("Portfolio Risk Level: " + best.risk);   
+       System.out.printf("   Expected Portfolio Return: %.3f\n", best.aReturn);   
+       System.out.printf("Portfolio Risk Level: %.3f", best.risk);   
     }
     
     
     public static double Variance(double[] riskLevels, double[] weights) 
     {
-      double portfolioVariance = 0.0; 
+      double variance = 0; 
       for(int i=0; i<3; i++) 
       {
         for(int j=0; j<3; j++) 
         {
-          portfolioVariance += weights[i] * weights[j] * riskLevels[i] * riskLevels[j];
+          variance += weights[i] * weights[j] * riskLevels[i] * riskLevels[j];
         } 
       }
-      return portfolioVariance;
+      return variance;
     }
 } 
+    
+    
+
    
