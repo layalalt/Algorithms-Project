@@ -30,10 +30,24 @@ public class AlgorithmsPhase1
       }
       
       System.out.print("Enter tolerance level (0.010-0.050): "); //user decides on the tolerance level
-      double maxReturn = 0, tolerance = key.nextDouble();  
-      int totalQuantity; //total number of units allocated
+      double tolerance = key.nextDouble();  
       Allocation best = new Allocation(); //when the algorithm terminates, will contain the best asset unit allocation
-      double portfolioReturn, portfolioRisk, weights[] = new double[3]; //weights is the weight of each asset in a given allocation
+      
+      bruteForce(eReturn, riskLevel, quantity, tolerance, best); //calls brute-force algorithm
+    
+      System.out.println("Optimal Allocation: ");
+      System.out.println(name[0] + ": " + best.units1 + " units");    
+      System.out.println(name[1] + ": " + best.units2 + " units");    
+      System.out.println(name[2] + ": " + best.units3 + " units"); 
+      System.out.printf("   Expected Portfolio Return: %.3f\n", best.aReturn);   
+      System.out.printf("Portfolio Risk Level: %.3f\n", best.risk);   
+    }
+    
+    
+    public static void bruteForce(double[] eReturn, double[] riskLevel, int[] quantity, double tolerance, Allocation best)
+    {
+      int totalQuantity; //total number of units allocated
+      double maxReturn = 0, portfolioReturn, portfolioRisk, weights[] = new double[3]; //weights is the weight of each asset in a given allocation
       
       for(int i=1; i<=quantity[0]; i++)
       {
@@ -61,12 +75,6 @@ public class AlgorithmsPhase1
          }
        }  
       
-       System.out.println("Optimal Allocation: ");
-       System.out.println(name[0] + ": " + best.units1 + " units");    
-       System.out.println(name[1] + ": " + best.units2 + " units");    
-       System.out.println(name[2] + ": " + best.units3 + " units"); 
-       System.out.printf("   Expected Portfolio Return: %.3f\n", best.aReturn);   
-       System.out.printf("Portfolio Risk Level: %.3f\n", best.risk);   
     }
     
     
