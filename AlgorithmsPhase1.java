@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.*;
+
 public class AlgorithmsPhase1
 {
     public static void main(String [] args)
@@ -31,10 +32,12 @@ public class AlgorithmsPhase1
       
       System.out.print("Enter tolerance level (0.010-0.050): "); //user decides on the tolerance level
       double tolerance = key.nextDouble();  
+      System.out.print("Enter total investment amount: "); //user decides on the tolerance level
+      int investment = key.nextInt();  
       Allocation best = new Allocation(); //when the algorithm terminates, will contain the best asset unit allocation
       
-      bruteForce(eReturn, riskLevel, quantity, tolerance, best); //calls brute-force algorithm
-    
+      bruteForce(eReturn, riskLevel, quantity, tolerance, investment, best); //calls brute-force algorithm
+
       System.out.println("Optimal Allocation: ");
       System.out.println(name[0] + ": " + best.units1 + " units");    
       System.out.println(name[1] + ": " + best.units2 + " units");    
@@ -44,18 +47,20 @@ public class AlgorithmsPhase1
     }
     
     
-    public static void bruteForce(double[] eReturn, double[] riskLevel, int[] quantity, double tolerance, Allocation best)
+    public static void bruteForce(double[] eReturn, double[] riskLevel, int[] quantity, double tolerance, int investment, Allocation best)
     {
       int totalQuantity; //total number of units allocated
       double maxReturn = 0, portfolioReturn, portfolioRisk, weights[] = new double[3]; //weights is the weight of each asset in a given allocation
       
-      for(int i=1; i<=quantity[0]; i++)
+      for(int i=0; i<=quantity[0]; i++)
       {
-        for(int j=1; j<=quantity[1]; j++)
+        for(int j=0; j<=quantity[1]; j++)
         {
-          for(int k=1; k<=quantity[2]; k++)
+          for(int k=0; k<=quantity[2]; k++)
           {
              totalQuantity = i+j+k;
+             if(totalQuantity > investment)
+                 continue;
              weights[0] = (i/(totalQuantity*1.0));
              weights[1] = (j/(totalQuantity*1.0));
              weights[2] = (k/(totalQuantity*1.0));
@@ -65,7 +70,7 @@ public class AlgorithmsPhase1
              
              if(portfolioRisk <= tolerance)
              {
-               if(portfolioReturn > maxReturn) //if a given allocation is within the tolerance level and has a greater return than a previously found return
+               if(portfolioReturn >= maxReturn) //if a given allocation is within the tolerance level and has a greater return than a previously found return
                {
                  maxReturn = portfolioReturn; //maximum possible return is updated
                  best.setAllocation(i, j, k, portfolioReturn, portfolioRisk); //best allocation is updated
