@@ -1,3 +1,5 @@
-AMZN : 0.07 : 0.04 : 600 
-TSLA : 0.1 : 0.05 : 400 
+AMZN : 0.07 : 0.04 : 600
+TSLA : 0.1 : 0.05 : 400
 FB : 0.06 : 0.025 : 700
+Total investment: 900
+Risk tolerance level: 0.038
