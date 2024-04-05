@@ -10,7 +10,9 @@ public class AlgorithmsPhase1
       double eReturn[] = new double[3]; //stores asset's expected return
       double riskLevel[] = new double[3]; //stores asset's risk level
       int quantity[] = new int[3]; //stores asset's maximum quantity
-      
+      double tolerance = 0;
+      int investment = 0;
+              
       try (BufferedReader br = new BufferedReader(new FileReader("Profile1.txt"))) //reads the text file containing the profile
       {
         String line;
@@ -18,11 +20,21 @@ public class AlgorithmsPhase1
         while((line = br.readLine()) != null) 
         {
           String[] parts = line.split(" : "); //per iteration, parts will store each asset's information as separate parts; parts[0] is the name, parts[1] is the expected return...
-          name[i] = parts[0];
-          eReturn[i] = Double.parseDouble(parts[1]);
-          riskLevel[i] = Double.parseDouble(parts[2]);
-          quantity[i] = Integer.parseInt(parts[3]);
-          i++;
+          if(parts.length == 4) 
+          { 
+              name[i] = parts[0];
+              eReturn[i] = Double.parseDouble(parts[1]);
+              riskLevel[i] = Double.parseDouble(parts[2]);
+              quantity[i]= Integer.parseInt(parts[3]);
+              i++;
+          } 
+          else if(i > 2) 
+          { // Total investment and risk tolerance
+             if(line.startsWith("Total investment:")) 
+                investment = Integer.parseInt(line.split(":")[1].trim());
+             else if(line.startsWith("Risk tolerance level:")) 
+                 tolerance = Double.parseDouble(line.split(":")[1].trim());
+          }
         } 
       }
       catch (IOException e) 
@@ -30,10 +42,6 @@ public class AlgorithmsPhase1
         e.printStackTrace();
       }
       
-      System.out.print("Enter tolerance level (0.010-0.050): "); //user decides on the tolerance level
-      double tolerance = key.nextDouble();  
-      System.out.print("Enter total investment amount: "); //user decides on the tolerance level
-      int investment = key.nextInt();  
       Allocation best = new Allocation(); //when the algorithm terminates, will contain the best asset unit allocation
       
       bruteForce(eReturn, riskLevel, quantity, tolerance, investment, best); //calls brute-force algorithm
@@ -92,5 +100,3 @@ public class AlgorithmsPhase1
       return variance;
     }
 } 
-    
-
