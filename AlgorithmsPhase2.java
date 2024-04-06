@@ -3,8 +3,45 @@ import java.io.*;
 
 public class AlgorithmsPhase2 
 {
+    static class Asset 
+    {
+         String name;
+         double eReturn;
+         double risk;
+         int quantity;
+
+        public Asset(String name, double eReturn, double risk, int quantity) 
+        {
+           this.name = name;
+           this.eReturn = eReturn;
+           this.risk = risk;
+           this.quantity = quantity;
+        }
+    }
+    
+    static class Allocation
+    {
+       List<Integer> units = new ArrayList<Integer>(); // Store units allocated for each asset
+       double aReturn; // Represent the return of the allocation
+       double risk; // Represent the risk of the allocation
+
+       public Allocation(int numAssets) 
+       {
+         for(int i=0; i<numAssets; i++) 
+            units.add(0);
+       }
+
+       public void setAllocation(List<Integer> units, double aReturn, double risk) 
+       {     
+         this.units = new ArrayList<>(units); 
+         this.aReturn = aReturn;
+         this.risk = risk;
+       }
+    }
+    
     public static void main(String [] args)
     {
+        
       Scanner key = new Scanner(System.in);
       String name[] = new String[3]; //stores asset's name
       double eReturn[] = new double[3]; //stores asset's expected return
@@ -13,7 +50,7 @@ public class AlgorithmsPhase2
       double tolerance = 0;
       int investment = 0;
               
-      try (BufferedReader br = new BufferedReader(new FileReader("Profile1.txt"))) //reads the text file containing the profile
+      try(BufferedReader br = new BufferedReader(new FileReader("Profile1.txt"))) //reads the text file containing the profile
       {
         String line;
         int i = 0;
@@ -41,166 +78,85 @@ public class AlgorithmsPhase2
       {
         e.printStackTrace();
       }
-      Allocation best = new Allocation();
-      dynamicProgramming(eReturn, riskLevel, quantity, tolerance, investment, best);
       
-      /**System.out.println("Optimal Allocation: ");
-      System.out.println(name[0] + ": " + best.units1 + " units");    
-      System.out.println(name[1] + ": " + best.units2 + " units");    
-      System.out.println(name[2] + ": " + best.units3 + " units"); 
-      System.out.printf("   Expected Portfolio Return: %.3f\n", best.aReturn);   
-      System.out.printf("Portfolio Risk Level: %.3f\n", best.risk);  */ 
-    }
-    
-   /** public static void dynamicProgramming(double[] eReturn, double[] riskLevel, int[] quantity, double tolerance, int investment, Allocation best) 
-    {
-      int assets = eReturn.length;
-      double[][][] dp = new double[assets + 1][investment + 1][investment + 1];
-
-    
-      for(int i=0; i<=assets; i++) 
-         for(int j=0; j<=investment; j++) 
-            for(int k=0; k<=investment; k++) 
-                  dp[i][j][k] = 0;
-            
-        
+      ArrayList<Asset> assets = new ArrayList<Asset>();
+      
+      assets.add(new Asset(name[0], eReturn[0], riskLevel[0], quantity[0]));
+      assets.add(new Asset(name[1], eReturn[1], riskLevel[1], quantity[1]));
+      assets.add(new Asset(name[2], eReturn[2], riskLevel[2], quantity[2]));
   
-      for(int i=1; i<=assets; i++) 
-      {
-        for(int j=1; j<=investment; j++) 
-        {
-            for(int k=0; k<=Math.min(j, quantity[i - 1]); k++) 
-            {
-                double portfolioReturn = k/j * eReturn[i - 1] + dp[i - 1][j - k][k];
-                double portfolioRisk = Math.sqrt(Variance3(riskLevel, computeWeights(i, k, j - k)));
-                if(portfolioRisk <= tolerance && portfolioReturn > dp[i][j][k]) 
-                    dp[i][j][k] = portfolioReturn;
-            }
-        }
-      }
-
-    // Find the maximum portfolio return
-    double maxReturn = 0;
-    int maxJ = 0, maxK = 0;
-    for(int j=0; j<=investment; j++) 
-    {
-        for(int k=0; k<=investment; k++) 
-        {
-            maxReturn = Math.max(maxReturn, dp[assets][j][k]);
-            if (dp[assets][j][k] == maxReturn) 
-            {
-                maxJ = j;
-                maxK = k;
-            }
-        }
-    }
-
-    // Update the best allocation
-    best.setAllocation(maxJ - maxK, maxK, investment - maxJ, maxReturn, Math.sqrt(Variance3(riskLevel, computeWeights(assets, maxK, maxJ - maxK))));
-}
-
-// Helper method to compute weights
-private static double[] computeWeights(int assetIndex, int quantity1, int quantity2) {
-    double totalQuantity = quantity1 + quantity2;
-    double weight1 = quantity1 / totalQuantity;
-    double weight2 = quantity2 / totalQuantity;
-    return new double[]{weight1, weight2};
-}*/
-    
-    public static void dynamicProgramming(double[] eReturn, double[] riskLevel, int[] quantity, double tolerance, int investment, Allocation best)
-    {
-        int assets = eReturn.length;
-        double [][] dp = new double[assets+1][investment + 1];
-        //Allocation[][] allocation = new Allocation[assets + 1][investment + 1];
- 
-        for(int i=1; i<=assets; i++) 
-        {       
-            for(int j=1; j<=investment; j++) 
-            {
-               dp[i][j] = dp[i-1][j]; //initialize it to previous row
-              
-               double [] weights = new double[3];
-               if(i == 1 && j <= quantity[0])
-               { 
-                   //if(riskLevel[0] <= tolerance)
-                     dp[i][j] = Math.max(dp[0][j], eReturn[0]);
-                    // allocation[i][j].setAllocation(j,0,0, dp[i][j],0);
-               }
-               
-               else if(i == 2 && j <= quantity[0] + quantity[1])
-               {  
-                  weights[0] = ((j-1)/(j*1.0));
-                  weights[1] = (1/(j*1.0));
-                  double prevRisk = 0;
-                  prevRisk = Math.sqrt(Variance2(prevRisk, weights[0], riskLevel[1], weights[1]));
-                  //if(Math.sqrt(Variance2(prevRisk, weights[0], riskLevel[1], weights[1])) <= tolerance)
-                     dp[i][j] = Math.max(dp[2][j-1]*((j-1)/j) + eReturn[1]*(1/j), Math.max(dp[1][j], dp[2][j-1]));
-                   // allocation[i][j].setAllocation(j-1,1,0, dp[i][j],0);
-
-               }
-               else if(i == 3 && j < quantity[0] + quantity[1] + quantity[2])
-               {
-                  weights[0] = ((j-1)/(j*1.0));
-                  weights[1] = (1/(j*1.0));
-                  double prevRisk = 0;
-                  prevRisk = Math.sqrt(Variance2(prevRisk, weights[0], riskLevel[1], weights[1]));
-                  //if(Math.sqrt(Variance2(prevRisk, weights[0], riskLevel[1], weights[1])) <= tolerance)
-                  {
-                      dp[i][j] = Math.max(dp[3][j-1]*((j-1)/j) + eReturn[2]*(1/j), Math.max(dp[2][j], dp[3][j-1]));
-                  } 
-               }
-         
-              }
-            }
-     
-    
-    double maxReturn = findMaxValue(dp);      
-        System.out.println(dp[3][investment]);
-        
-                         // displayGrid(dp, investment);
-                   
-    }
-    
-    public static double findMaxValue(double[][] dp)
-    {
-      double max = 0;
-        for (int i = 1; i <= 3; i++){ 
-        for (int j = 1; j <= 900; j++) {
-           if(dp[i][j]> max)
-               max = dp[i][j];
-        }
-    }
-       return max;
-    }
-    
-    
-public static double Variance3(double[] riskLevel, double[] weights) {
-   
-
-    double variance = 0;
-    for (int i = 0; i < weights.length; i++) {
-        variance += Math.pow(riskLevel[i] * weights[i], 2);
-    }
-    return variance;
-}
-
-
- 
-    
-    public static double Variance(double[] riskLevels, double[] weights) //calculates portfolio's variance
-    {
-      double variance = 0; 
-      for(int i=0; i<3; i++) 
-        for(int j=0; j<3; j++) 
-          variance += weights[i] * weights[j] * riskLevels[i] * riskLevels[j];
+      Allocation best = new Allocation(3);
       
-      return variance;
+      dynamicProgramming(assets, tolerance, investment, best);
+      
+      System.out.println("Optimal Allocation: ");
+      System.out.println(name[0] + ": " + best.units.get(0) + " units");    
+      System.out.println(name[1] + ": " + best.units.get(1) + " units");    
+      System.out.println(name[2] + ": " + best.units.get(2) + " units"); 
+      System.out.printf("   Expected Portfolio Return: %.3f\n", best.aReturn);   
+      System.out.printf("Portfolio Risk Level: %.3f\n", best.risk); 
     }
     
-    public static double Variance2(double riskLevel1, double weight1, double riskLevel2, double weight2) 
+  
+    public static void dynamicProgramming(ArrayList<Asset> assets, double tolerance, int investment, Allocation best)
     {
-        double variance =  (Math.pow(weight1, 2) * Math.pow(riskLevel1, 2)) + (Math.pow(weight2, 2) * Math.pow(riskLevel2, 2)) + 2 * weight1 * weight2* riskLevel1 * riskLevel2;
-        return variance;
+        int assetsSize = assets.size();
+        double[][] returns = new double[assetsSize][investment + 1];
+        double[][] weights = new double[assetsSize][investment + 1];
+        double[][] riskLevels = new double[assetsSize][investment + 1];
+        
+        for(int i=0; i<assetsSize; i++) 
+        {
+           Asset currentAsset = assets.get(i);
+           for(int j=0; j<=Math.min(currentAsset.quantity, investment); j++) 
+           {    
+               weights[i][j] = (j/(investment*1.0));
+               returns[i][j] = (j/(investment*1.0))*currentAsset.eReturn; 
+               riskLevels[i][j] = currentAsset.risk;
+           }
+        }
+
+        double[][] dp = new double[assetsSize + 1][investment + 1];
+        int[][] allocations = new int[assetsSize + 1][investment + 1];
+
+        for(int i=1; i<=assetsSize; i++) 
+        {
+          Asset currentAsset = assets.get(i - 1);
+          for(int j=1; j<=investment; j++) 
+          {
+            for(int k=0; k<=Math.min(currentAsset.quantity, j); k++) 
+            {
+                
+                if(Math.sqrt(Variance(riskLevels[i-1], weights[i-1] , k)) <= tolerance)
+                {   
+                    //System.out.println(Math.sqrt(Variance(riskLevels[i-1], weights[i-1] , k)));
+                    dp[i][j] = Math.max(dp[i-1][j], returns[i-1][k] + dp[i-1][j-k]);
+                    allocations[i][j] = k;
+                }
+                else
+                    dp[i][j] = dp[i-1][j];
+            }
+          }
+        }
+
+       List<Integer> bestUnits = new ArrayList<Integer>();
+       int remainingInvestment = investment;
+       for(int i=assetsSize; i>0; i--) 
+       {
+         int units = allocations[i][remainingInvestment];
+         bestUnits.add(units);
+         remainingInvestment -= units;
+       }
+        displayGrid(dp, investment);
+        best.setAllocation(bestUnits, dp[assetsSize][investment], Math.sqrt(Variance(riskLevels[assetsSize - 1], weights[assetsSize - 1], allocations[assetsSize][investment])));
+    }
+
+    public static double Variance(double[] riskLevels, double[] weights, int length) 
+    {
+       double variance = 0;
+
+    
+       return 0;
     }
     
     public static void displayGrid(double[][] g, int investment)
@@ -209,7 +165,7 @@ public static double Variance3(double[] riskLevel, double[] weights) {
         { 
           for(int j=0; j<investment; j++) 
           { 
-              System.out.printf("%.2f |",g[i][j]);
+              System.out.printf("%.4f |",g[i][j]);
           
           }
            System.out.println();
@@ -218,4 +174,6 @@ public static double Variance3(double[] riskLevel, double[] weights) {
          System.out.println();
     }
     
-}
+   
+ }
+
