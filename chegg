@@ -1,0 +1,113 @@
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+
+class Asset {
+    String id;
+    double expectedReturn;
+    double riskLevel;
+    int quantity;
+
+    Asset(String id, double expectedReturn, double riskLevel, int quantity) {
+        this.id = id;
+        this.expectedReturn = expectedReturn;
+        this.riskLevel = riskLevel;
+        this.quantity = quantity;
+    }
+}
+
+public class OptimalAssetAllocation {
+
+    static double[][] dp;
+    static int[][] allocation;
+
+    public static void main(String[] args) {
+        ArrayList<Asset> assets = readInput("input.txt");
+        int totalInvestment = 1000; // Example: Total investment amount
+        double riskTolerance = 0.024; // Example: Risk tolerance level
+
+        computeOptimalAllocation(assets, totalInvestment, riskTolerance);
+    }
+
+    static ArrayList<Asset> readInput(String filename) {
+        ArrayList<Asset> assets = new ArrayList<>();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(filename));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] parts = line.split(":");
+                String id = parts[0].trim();
+                double expectedReturn = Double.parseDouble(parts[1].trim().split(" ")[0]);
+                double riskLevel = Double.parseDouble(parts[1].trim().split(" ")[1]);
+                int quantity = Integer.parseInt(parts[2].trim());
+                assets.add(new Asset(id, expectedReturn, riskLevel, quantity));
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return assets;
+    }
+
+    static void computeOptimalAllocation(ArrayList<Asset> assets, int totalInvestment, double riskTolerance) {
+        int n = assets.size();
+        dp = new double[n + 1][totalInvestment + 1];
+        allocation = new int[n + 1][totalInvestment + 1];
+
+        for (int i = 0; i <= totalInvestment; i++) {
+            dp[0][i] = 0;
+        }
+
+        for (int i = 1; i <= n; i++) {
+            for (int j = 0; j <= totalInvestment; j++) {
+                dp[i][j] = dp[i - 1][j];
+                for (int k = 1; k <= Math.min(j, totalInvestment / assets.get(i - 1).expectedReturn); k++) {
+                    if (dp[i][j] < dp[i - 1][j - k * (int)assets.get(i - 1).expectedReturn] + k * assets.get(i - 1).expectedReturn) {
+                        dp[i][j] = dp[i - 1][j - k * (int)assets.get(i - 1).expectedReturn] + k * assets.get(i - 1).expectedReturn;
+                        allocation[i][j] = k;
+                    }
+                }
+            }
+        }
+
+        ArrayList<String> optimalAllocation = retrieveOptimalAllocation(assets, totalInvestment);
+        double portfolioExpectedReturn = dp[n][totalInvestment];
+        double portfolioRiskLevel = calculatePortfolioRisk(assets, totalInvestment, optimalAllocation);
+
+        System.out.println("Optimal Allocation:");
+        for (String allocation : optimalAllocation) {
+            System.out.println(allocation);
+        }
+        System.out.println("Expected Portfolio Return: " + portfolioExpectedReturn);
+        System.out.println("Portfolio Risk Level: " + portfolioRiskLevel);
+    }
+
+    static ArrayList<String> retrieveOptimalAllocation(ArrayList<Asset> assets, int totalInvestment) {
+        ArrayList<String> allocationResult = new ArrayList<>();
+        int n = assets.size();
+        int currentInvestment = totalInvestment;
+        for (int i = n; i > 0; i--) {
+            Asset asset = assets.get(i - 1);
+            int units = allocation[i][currentInvestment];
+            allocationResult.add(asset.id + ": " + units + " units");
+            currentInvestment -= units * asset.quantity;
+        }
+        return allocationResult;
+    }
+
+    static double calculatePortfolioRisk(ArrayList<Asset> assets, int totalInvestment, ArrayList<String> optimalAllocation) {
+        double portfolioRisk = 0.0;
+        for (String allocation : optimalAllocation) {
+            String[] parts = allocation.split(":");
+            String id = parts[0].trim();
+            int units = Integer.parseInt(parts[1].trim().split(" ")[0]);
+            for (Asset asset : assets) {
+                if (asset.id.equals(id)) {
+                    portfolioRisk += units * asset.riskLevel;
+                }
+            }
+        }
+        return portfolioRisk;
+    }
+}
