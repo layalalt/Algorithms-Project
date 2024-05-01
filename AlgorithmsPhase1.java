@@ -3,6 +3,22 @@ import java.util.*;
 
 public class AlgorithmsPhase1
 {
+    static class Allocation //object that will hold a given allocation
+    {
+      int units1, units2, units3; //each represents the amount of units allocation for each asset 
+      double aReturn, risk; //represent the return and risk of each unit allocation
+   
+      public void setAllocation(int units1, int units2, int units3, double aReturn, double risk)
+      { 
+        this.units1 = units1;
+        this.units2 = units2;
+        this.units3 = units3;
+        this.aReturn = aReturn;
+        this.risk = risk;
+      }
+   
+    }
+    
     public static void main(String [] args)
     {
       Scanner key = new Scanner(System.in);
@@ -13,7 +29,7 @@ public class AlgorithmsPhase1
       double tolerance = 0;
       int investment = 0;
               
-      try (BufferedReader br = new BufferedReader(new FileReader("Profile1.txt"))) //reads the text file containing the profile
+      try (BufferedReader br = new BufferedReader(new FileReader("Profile2.txt"))) //reads the text file containing the profile
       {
         String line;
         int i = 0;
@@ -69,16 +85,17 @@ public class AlgorithmsPhase1
              totalQuantity = i+j+k;
              if(totalQuantity > investment)
                  continue;
-             weights[0] = (i/(totalQuantity*1.0));
-             weights[1] = (j/(totalQuantity*1.0));
-             weights[2] = (k/(totalQuantity*1.0));
+
+             weights[0] = (i/(investment*1.0));
+             weights[1] = (j/(investment*1.0));
+             weights[2] = (k/(investment*1.0));
              
              portfolioReturn = weights[0]*eReturn[0] + weights[1]*eReturn[1] + weights[2]*eReturn[2]; 
              portfolioRisk = Math.sqrt(Variance(riskLevel, weights)); //the portfolio's risk is the standard deviation of the portfolio
              
              if(portfolioRisk <= tolerance)
              {
-               if(portfolioReturn >= maxReturn) //if a given allocation is within the tolerance level and has a greater return than a previously found return
+               if(portfolioReturn > maxReturn) //if a given allocation is within the tolerance level and has a greater return than a previously found return
                {
                  maxReturn = portfolioReturn; //maximum possible return is updated
                  best.setAllocation(i, j, k, portfolioReturn, portfolioRisk); //best allocation is updated
@@ -100,3 +117,4 @@ public class AlgorithmsPhase1
       return variance;
     }
 } 
+    
