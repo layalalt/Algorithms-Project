@@ -4,7 +4,7 @@ import java.io.*;
 public class AlgorithmsPhase2 
 {
 
-    static class Asset 
+    static class Asset //objects that will hold the assets read from the file
     {
 
         String name;
@@ -34,7 +34,7 @@ public class AlgorithmsPhase2
                 units.add(0); 
         }
 
-        public void setAllocation(Allocation a) //copy constructor
+        public void setAllocation(Allocation a)
         {
             this.units = a.units;
             this.aReturn = a.aReturn;
@@ -84,7 +84,7 @@ public class AlgorithmsPhase2
                     quantity[i] = Integer.parseInt(parts[3]);
                     i++;
                 } 
-                else if(i > 2) 
+                else if(i > 2) //reads the total investment and risk from the input file
                 {
                     if(line.startsWith("Total investment:")) 
                       investment = Integer.parseInt(line.split(":")[1].trim());
@@ -103,12 +103,14 @@ public class AlgorithmsPhase2
         assets.add(new Asset(name[0], eReturn[0], riskLevel[0], quantity[0]));
         assets.add(new Asset(name[1], eReturn[1], riskLevel[1], quantity[1]));
         assets.add(new Asset(name[2], eReturn[2], riskLevel[2], quantity[2]));
-
-        //System.out.println(riskLevel[0] + " "+ riskLevel[1] + " " + riskLevel[2]);
-        Allocation best = new Allocation(3);
-
-        dynamicProgramming(assets, tolerance, investment, best);
-
+    
+        Allocation best = new Allocation(3); //best allocation found
+        
+        //long startTime = System.currentTimeMillis();
+        dynamicProgramming(assets, tolerance, investment, best); //calls the dynamic programming algorithm
+        //long endTime = System.currentTimeMillis();
+        //System.out.println("Time taken by the dynamic programming algorithm: " + (endTime-startTime)/1000.0 + " seconds");
+      
         System.out.println("Optimal Allocation: ");
         System.out.println(name[0] + ": " + best.units.get(0) + " units");
         System.out.println(name[1] + ": " + best.units.get(1) + " units");
@@ -126,25 +128,24 @@ public class AlgorithmsPhase2
        riskLevels[2] = assets.get(2).risk;
        
        
-       
-       double[][] dp = new double[assetsSize+1][investment+1];
-       Allocation[][] allocations = new Allocation[assetsSize+1][investment+1];
+       double[][] dp = new double[assetsSize+1][investment+1]; //table that will store the best return found so far given the first i assets and j of the investment given it's within the tolerance level
+       Allocation[][] allocations = new Allocation[assetsSize+1][investment+1]; //table that will store the composition of the allocation at dp[i][j] 
     
-       for(int i=0; i<=assetsSize; i++) 
-         for (int j=0; j<=investment; j++) 
+       for(int i=0; i<=assetsSize; i++) //allocations initializer
+         for(int j=0; j<=investment; j++) 
             allocations[i][j] = new Allocation(3);
           
        
       for(int i=1; i<=assetsSize; i++) 
       {
-         Asset currentAsset = assets.get(i-1);
+         Asset currentAsset = assets.get(i-1); //asset of the current row
          for(int j=1; j<=investment; j++) 
          {
-            for(int k=0; k<=Math.min(currentAsset.quantity, j); k++) 
+            for(int k=0; k<=Math.min(currentAsset.quantity, j); k++) //combinations possible at the current row
             {
-                eReturn = dp[i-1][j-k] + currentAsset.eReturn * (k/(double)investment);
+                eReturn = dp[i-1][j-k] + currentAsset.eReturn * (k/(double)investment); //return combination calculator
                 
-                double[] weights = new double[3];
+                double[] weights = new double[3]; //weights of each asset
                 weights[i-1] = k/(double)investment;
                
                 if(i > 1) 
@@ -153,15 +154,16 @@ public class AlgorithmsPhase2
                     weights[1] = allocations[i-1][j-k].units.get(1)/(double)investment;
                 }
                 
-                portfolioRisk = Math.sqrt(Variance(riskLevels, weights));
+                portfolioRisk = Math.sqrt(Variance(riskLevels, weights)); //risk calculator
                 
                 if(portfolioRisk <= tolerance)
                 {
-                    if(eReturn > dp[i][j]) 
+                    if(eReturn > dp[i][j]) //if the current combination is greater than a previously found combination
                     {
                         dp[i][j] = eReturn;
                         allocations[i][j] = new Allocation(3);
                         
+                        //allocation setters per row
                         if(i == 1) 
                           allocations[i][j].setAllocation(k, 0, 0, eReturn, portfolioRisk);
                         else if(i == 2) 
@@ -170,10 +172,11 @@ public class AlgorithmsPhase2
                           allocations[i][j].setAllocation( allocations[i-1][j-k].units.get(0), allocations[i-1][j-k].units.get(1), k, eReturn, portfolioRisk);   
                     }
                 }
+
             }
          }
       }
-      best.setAllocation(allocations[assetsSize][investment]);
+      best.setAllocation(allocations[assetsSize][investment]); //best allocation
     }
 
     
